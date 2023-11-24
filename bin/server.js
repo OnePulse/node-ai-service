@@ -188,6 +188,7 @@ server.post("/images", async (request, reply) => {
 		// Check if the response status code indicates an error
 		if (!result.ok) {
 			const errorDetails = await result.json()
+			console.log(errorDetails)
 			return reply.status(result.status).send({ error: `OpenAI API Error: ${errorDetails.error}` })
 		}
 
@@ -208,7 +209,7 @@ server.post("/images", async (request, reply) => {
 
 server.listen(
 	{
-		port: settings.apiOptions?.port || settings.port || 3000,
+		port: settings.apiOptions?.port || settings.port || 3001,
 		host: settings.apiOptions?.host || "localhost"
 	},
 	(error) => {
