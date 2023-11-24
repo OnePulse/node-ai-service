@@ -209,7 +209,7 @@ server.post("/images", async (request, reply) => {
 
 server.listen(
 	{
-		port: settings.apiOptions?.port || settings.port || 3001,
+		port: settings.apiOptions?.port || settings.port || 3002,
 		host: settings.apiOptions?.host || "localhost"
 	},
 	(error) => {
