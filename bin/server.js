@@ -213,7 +213,7 @@ server.post("/images", async (request, reply) => {
 				prompt: body.message,
 				n: 1,
 				style: "natural",
-				size: "1024x1024"
+				size: "1792x1024"
 			})
 		})
 
