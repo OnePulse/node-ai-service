@@ -169,6 +169,42 @@ server.post("/images", async (request, reply) => {
 			return reply.status(400).send({ error: "Missing 'message' property in the request body." })
 		}
 
+		// Check message moderation using OpenAI Moderation API
+		const moderationResult = await fetch("https://api.openai.com/v1/moderations", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				Authorization: `Bearer ${settings.chatGptClient.openaiApiKey}`
+			},
+			body: JSON.stringify({
+				input: body.message,
+				model: "text-moderation-latest"
+			})
+		})
+
+		// Check if the moderation result is not okay
+
+		console.log("RESULT", moderationResult)
+
+		if (!moderationResult.ok) {
+			const moderationErrorDetails = await moderationResult.json()
+			console.log(moderationErrorDetails)
+			return reply
+				.status(moderationResult.status)
+				.send({ error: `OpenAI Moderation API Error: ${moderationErrorDetails.error}` })
+		}
+
+		const moderationJson = await moderationResult.json()
+
+		console.log("MODERATION JSON", moderationJson)
+
+		// Check if the message complies with moderation guidelines
+		if (moderationJson && moderationJson.results[0].flagged) {
+			return reply.status(400).send({ error: "Message does not comply with moderation guidelines." })
+		}
+
+		// 	// Proceed to generate image if moderation check passed
+
 		const result = await fetch("https://api.openai.com/v1/images/generations", {
 			method: "POST",
 			headers: {
@@ -189,7 +225,7 @@ server.post("/images", async (request, reply) => {
 		if (!result.ok) {
 			const errorDetails = await result.json()
 			console.log(errorDetails)
-			return reply.status(result.status).send({ error: `OpenAI API Error: ${errorDetails.error}` })
+			return reply.status(result.status).send({ error: `OpenAI API Error: ${errorDetails.error.message}` })
 		}
 
 		const json = await result.json()
