@@ -184,8 +184,6 @@ server.post("/images", async (request, reply) => {
 
 		// Check if the moderation result is not okay
 
-		console.log("RESULT", moderationResult)
-
 		if (!moderationResult.ok) {
 			const moderationErrorDetails = await moderationResult.json()
 			console.log(moderationErrorDetails)
@@ -195,8 +193,6 @@ server.post("/images", async (request, reply) => {
 		}
 
 		const moderationJson = await moderationResult.json()
-
-		console.log("MODERATION JSON", moderationJson)
 
 		// Check if the message complies with moderation guidelines
 		if (moderationJson && moderationJson.results[0].flagged) {
