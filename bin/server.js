@@ -189,7 +189,7 @@ server.post("/images", async (request, reply) => {
 			console.log(moderationErrorDetails)
 			return reply
 				.status(moderationResult.status)
-				.send({ error: `OpenAI Moderation API Error: ${moderationErrorDetails.error}` })
+				.send({ error: `OpenAI Moderation API Error: ${moderationErrorDetails.error.message}` })
 		}
 
 		const moderationJson = await moderationResult.json()
