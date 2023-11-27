@@ -1,6 +1,7 @@
 ### VisualStudioCode template
 .vscode/*
-
+!.vscode/settings.json
+!.vscode/settings.js
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
@@ -201,6 +202,7 @@ dist
 .pnp.*
 
 # node-chatgpt-api
+settings.js
 test.js
 *.test.js
 *.cast
