@@ -209,7 +209,7 @@ server.post("/images", async (request, reply) => {
 			},
 			body: JSON.stringify({
 				model: "dall-e-3",
-				response_format: "b64_json",
+				response_format: "url",
 				prompt: body.message,
 				n: 1,
 				style: "natural",
