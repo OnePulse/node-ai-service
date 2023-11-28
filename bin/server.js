@@ -221,7 +221,7 @@ server.post("/images", async (request, reply) => {
 		if (!result.ok) {
 			const errorDetails = await result.json()
 			console.log(errorDetails)
-			return reply.status(result.status).send({ error: `OpenAI API Error: ${errorDetails.error.message}` })
+			return reply.status(result.status).send({ error: ` OpenAI API Error: ${errorDetails.error.message}` })
 		}
 
 		const json = await result.json()
