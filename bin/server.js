@@ -239,6 +239,77 @@ server.post("/images", async (request, reply) => {
 	}
 })
 
+server.post("/open-text-check", async (request, reply) => {
+	const body = request.body || {}
+
+	if (!body.question || !body.text) {
+		return reply.status(400).send({ error: "Missing 'question' or 'text' property in the request body." })
+	}
+
+	const headers = {
+		"Content-Type": "application/json",
+		Authorization: `Bearer ${settings.chatGptClient.openaiApiKey}`,
+		"OpenAI-Beta": "assistants=v1"
+	}
+
+	const postData = {
+		assistant_id: "asst_vTFrmDcLGbBRfJUqwtsK65jE",
+		thread: {
+			messages: [{ role: "user", content: `Q: ${body.question}? A: ${body.text}` }]
+		}
+	}
+
+	try {
+		const createThreadAndRunResponse = await fetch("https://api.openai.com/v1/threads/runs", {
+			method: "POST",
+			body: JSON.stringify(postData),
+			headers
+		})
+		const createThreadAndRunData = await createThreadAndRunResponse.json()
+		const { thread_id, id } = createThreadAndRunData
+
+		const result = await new Promise((resolve, reject) => {
+			const startTime = Date.now()
+			const intervalId = setInterval(async () => {
+				try {
+					const runObjectStatusResponse = await fetch(`https://api.openai.com/v1/threads/${thread_id}/runs/${id}`, {
+						headers
+					})
+					const runObjectStatusData = await runObjectStatusResponse.json()
+
+					if (runObjectStatusData.status === "completed") {
+						clearInterval(intervalId)
+						const listThreadResponse = await fetch(
+							`https://api.openai.com/v1/threads/${thread_id}/messages?order=desc&limit=1`,
+							{ headers }
+						)
+						const listThreadData = await listThreadResponse.json()
+						const markdownText = listThreadData.data[0].content[0].text.value
+						const jsonString = markdownText.replace(/```json\n|\n```/g, "") // Remove Markdown syntax
+						const result = JSON.parse(jsonString) // Parse the JSON string
+						resolve(result)
+					} else if (Date.now() - startTime > 20000) {
+						// 10 seconds timeout
+						clearInterval(intervalId)
+						reject(new Error("Polling timeout"))
+					}
+				} catch (error) {
+					clearInterval(intervalId)
+					reject(error)
+				}
+			}, 3000)
+		})
+
+		return reply.status(200).send({
+			question: body.question,
+			text: body.text,
+			...result
+		})
+	} catch (error) {
+		return reply.status(500).send({ error: error.message })
+	}
+})
+
 server.listen(
 	{
 		port: settings.apiOptions?.port || settings.port || 3002,
